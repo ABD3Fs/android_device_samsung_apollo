@@ -220,7 +220,7 @@ static int init_pmem_area_locked(private_module_t* m)
 		size_t size;
 		pmem_region region;
 		if (ioctl(master_fd, PMEM_GET_TOTAL_SIZE, &region) < 0) {
-			LOGE("PMEM_GET_TOTAL_SIZE failed, limp mode");
+//			LOGE("PMEM_GET_TOTAL_SIZE failed, limp mode");
 			size = 8<<20;   // 8 MiB
 		} else {
 			size = region.len;
@@ -294,7 +294,7 @@ static int gralloc_alloc_buffer(alloc_device_t* dev,
 try_ashmem:
 		fd = ashmem_create_region("gralloc-buffer", size);
 		if (fd < 0) {
-			LOGE("couldn't create ashmem (%s)", strerror(errno));
+//			LOGE("couldn't create ashmem (%s)", strerror(errno));
 			err = -errno;
 		}
 	} else {
@@ -353,7 +353,7 @@ try_ashmem:
 				err = 0;
 				goto try_ashmem;
 			} else {
-				LOGE("couldn't open pmem (%s)", strerror(errno));
+//				LOGE("couldn't open pmem (%s)", strerror(errno));
 			}
 		}
 	}
@@ -366,7 +366,7 @@ try_ashmem:
 		*pHandle = hnd;
 	}
 
-	LOGE_IF(err, "gralloc failed err=%s", strerror(-err));
+//	LOGE_IF(err, "gralloc failed err=%s", strerror(-err));
 
 	DEBUG_LEAVE();
 	return err;
@@ -443,9 +443,9 @@ static int gralloc_free(alloc_device_t* dev,
 			if (hnd->fd >= 0) {
 				struct pmem_region sub = { hnd->offset, hnd->size };
 				int err = ioctl(hnd->fd, PMEM_UNMAP, &sub);
-				LOGE_IF(err<0, "PMEM_UNMAP failed (%s), "
-					"fd=%d, sub.offset=%d, sub.size=%d",
-					strerror(errno), hnd->fd, hnd->offset, hnd->size);
+//				LOGE_IF(err<0, "PMEM_UNMAP failed (%s), "
+//					"fd=%d, sub.offset=%d, sub.size=%d",
+//					strerror(errno), hnd->fd, hnd->offset, hnd->size);
 				if (err == 0) {
 					// we can't deallocate the memory in case of UNMAP failure
 					// because it would give that process access to someone else's

@@ -21,8 +21,6 @@ include $(CLEAR_VARS)
 LOCAL_PRELINK_MODULE := false
 LOCAL_MODULE_PATH := $(TARGET_OUT_SHARED_LIBRARIES)/hw
 LOCAL_SHARED_LIBRARIES := liblog libcutils libGLESv1_CM
-LOCAL_C_INCLUDES += $(LOCAL_PATH)/../include
-
 
 LOCAL_SRC_FILES := 	\
 	allocator.cpp 	\
@@ -30,7 +28,7 @@ LOCAL_SRC_FILES := 	\
 	framebuffer.cpp \
 	mapper.cpp
 
-LOCAL_MODULE := gralloc.GT-I5800
+LOCAL_MODULE := gralloc.s5p6442
 LOCAL_MODULE_TAGS := optional
 LOCAL_ARM_MODE := arm
 LOCAL_CFLAGS += -DLOG_TAG=\"gralloc\" -mcpu=arm1176jzf-s -mfpu=vfp -O3 -Wall

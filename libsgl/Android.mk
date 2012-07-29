@@ -30,7 +30,7 @@ LOCAL_SRC_FILES:= \
 	fglsurface.cpp
 
 LOCAL_C_INCLUDES := \
-	$(LOCAL_PATH)/../libgralloc
+	$(LOCAL_PATH)/../include
 
 LOCAL_CFLAGS += -DLOG_TAG=\"libsgl\"
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES -DEGL_EGLEXT_PROTOTYPES

@@ -41,7 +41,7 @@
 
 #include "gralloc_priv.h"
 #include "gr.h"
-//#include "s3c_g2d.h"
+#include "s3c_g2d.h"
 
 //#define GRALLOC_FB_DEBUG
 
@@ -106,6 +106,10 @@ static int fb_setUpdateRect(struct framebuffer_device_t* dev,
 #endif
 
 /* HACK ALERT */
+#ifdef FBIO_WAITFORVSYNC
+#undef FBIO_WAITFORVSYNC
+#endif
+
 #define FBIO_WAITFORVSYNC		_IO ('F', 32)
 
 static int fb_post(struct framebuffer_device_t* dev, buffer_handle_t buffer)
@@ -135,7 +139,7 @@ static int fb_post(struct framebuffer_device_t* dev, buffer_handle_t buffer)
 		m->info.activate = FB_ACTIVATE_VBL;
 		m->info.yoffset = offset / m->finfo.line_length;
 		if (ioctl(m->framebuffer->fd, FBIOPAN_DISPLAY, &m->info) == -1) {
-			LOGE("FBIOPAN_DISPLAY failed");
+//			LOGE("FBIOPAN_DISPLAY failed");
 			m->base.unlock(&m->base, buffer);
 			return 0;
 		}
@@ -143,7 +147,7 @@ static int fb_post(struct framebuffer_device_t* dev, buffer_handle_t buffer)
 		// wait for VSYNC
 		unsigned int dummy; // No idea why is that, but it's required by the driver
 		if (ioctl(m->framebuffer->fd, FBIO_WAITFORVSYNC) < 0) {
-			LOGE("FBIO_WAITFORVSYNC failed");
+//			LOGE("FBIO_WAITFORVSYNC failed");
 			return 0;
 		}
 
@@ -212,6 +216,7 @@ int mapFrameBufferLocked(struct private_module_t* module)
 	};
 
 	int fd = -1;
+	int g2d_fd = -1;
 	int i=0;
 	char name[64];
 
@@ -221,19 +226,25 @@ int mapFrameBufferLocked(struct private_module_t* module)
 		i++;
 	}
 	if (fd < 0) {
-		LOGE("Failed to open framebuffer");
+//		LOGE("Failed to open framebuffer");
+		return -errno;
+	}
+
+	g2d_fd = open("/dev/s3c-g2d", O_RDWR, 0);
+	if (g2d_fd < 0) {
+//		LOGE("Failed to open G2D device (%s)", "/dev/s3c-g2d");
 		return -errno;
 	}
 
 	struct fb_fix_screeninfo finfo;
 	if (ioctl(fd, FBIOGET_FSCREENINFO, &finfo) == -1) {
-		LOGE("FBIOGET_FSCREENINFO failed");
+//		LOGE("FBIOGET_FSCREENINFO failed");
 		return -errno;
 	}
 
 	struct fb_var_screeninfo info;
 	if (ioctl(fd, FBIOGET_VSCREENINFO, &info) == -1) {
-		LOGE("FBIOGET_VSCREENINFO failed");
+//		LOGE("FBIOGET_VSCREENINFO failed");
 		return -errno;
 	}
 
@@ -254,8 +265,8 @@ int mapFrameBufferLocked(struct private_module_t* module)
 		module->fbFormat = HAL_PIXEL_FORMAT_RGB_565;
 		break;
 	default:
-		LOGW("Unsupported pixel format (%d bpp), requesting RGB565.",
-							info.bits_per_pixel);
+//		LOGW("Unsupported pixel format (%d bpp), requesting RGB565.",
+//							info.bits_per_pixel);
 		module->fbFormat = HAL_PIXEL_FORMAT_RGB_565;
 		info.bits_per_pixel = 16;
 	}
@@ -270,15 +281,15 @@ int mapFrameBufferLocked(struct private_module_t* module)
 	if (ioctl(fd, FBIOPUT_VSCREENINFO, &info) == -1) {
 		info.yres_virtual = info.yres;
 		flags &= ~PAGE_FLIP;
-		LOGW("FBIOPUT_VSCREENINFO failed, page flipping not supported");
+//		LOGW("FBIOPUT_VSCREENINFO failed, page flipping not supported");
 	}
 
 	if (info.yres_virtual < info.yres * 2) {
 		// we need at least 2 for page-flipping
 		info.yres_virtual = info.yres;
 		flags &= ~PAGE_FLIP;
-		LOGW("page flipping not supported (yres_virtual=%d, requested=%d)",
-		info.yres_virtual, info.yres*2);
+//		LOGW("page flipping not supported (yres_virtual=%d, requested=%d)",
+//		info.yres_virtual, info.yres*2);
 	}
 
 	if (ioctl(fd, FBIOGET_VSCREENINFO, &info) == -1)
@@ -308,7 +319,7 @@ int mapFrameBufferLocked(struct private_module_t* module)
 	float xdpi = (info.xres * 25.4f) / info.width;
 	float ydpi = (info.yres * 25.4f) / info.height;
 	float fps  = refreshRate / 1000.0f;
-
+/*
 	LOGI(   "using (fd=%d)\n"
 		"id           = %s\n"
 		"xres         = %d px\n"
@@ -338,7 +349,7 @@ int mapFrameBufferLocked(struct private_module_t* module)
 		info.height, ydpi,
 		fps
 	);
-
+*/
 
 	if (ioctl(fd, FBIOGET_FSCREENINFO, &finfo) == -1)
 		return -errno;
@@ -353,6 +364,7 @@ int mapFrameBufferLocked(struct private_module_t* module)
 	module->xdpi = xdpi;
 	module->ydpi = ydpi;
 	module->fps = fps;
+	module->s3c_g2d_fd = g2d_fd;
 
 	/*
 	* map the framebuffer
@@ -368,13 +380,13 @@ int mapFrameBufferLocked(struct private_module_t* module)
 
 	void* vaddr = mmap(0, fbSize, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
 	if (vaddr == MAP_FAILED) {
-		LOGE("Error mapping the framebuffer (%s)", strerror(errno));
+//		LOGE("Error mapping the framebuffer (%s)", strerror(errno));
 		return -errno;
 	}
 	module->framebuffer->base = intptr_t(vaddr);
 	memset(vaddr, 0, fbSize);
-#define S3CFB_SET_BLENDING        _IOW ('F', 500, int)
-	ioctl(fd, S3CFB_SET_BLENDING, 1);
+
+	ioctl(g2d_fd, S3C_G2D_SET_BLENDING, G2D_PIXEL_ALPHA);
 
 	DEBUG_LEAVE();
 	return 0;
@@ -437,7 +449,7 @@ int fb_device_open(hw_module_t const* module, const char* name,
 			const_cast<uint32_t&>(dev->device.height) = m->info.yres;
 			const_cast<int&>(dev->device.stride) = stride;
 			const_cast<int&>(dev->device.format) = m->fbFormat;
-			//const_cast<int&>(dev->device.format) = HAL_PIXEL_FORMAT_BGRA_8888;
+			//const_cast<int&>(dev->device.format) = HAL_PIXEL_FORMAT_RGBA_8888;
 			const_cast<float&>(dev->device.xdpi) = m->xdpi;
 			const_cast<float&>(dev->device.ydpi) = m->ydpi;
 			const_cast<float&>(dev->device.fps) = m->fps;

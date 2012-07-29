@@ -49,7 +49,11 @@
 
 #include <gralloc_priv.h>
 #include <linux/android_pmem.h>
-#include <ui/android_native_buffer.h>
+#include <ui/ANativeObjectBase.h>
+
+#include <pixelflinger/format.h>
+#include <pixelflinger/pixelflinger.h>
+
 #include <ui/PixelFormat.h>
 #include <hardware/gralloc.h>
 #include <linux/fb.h>
@@ -290,13 +294,13 @@ static inline unsigned long getFramebufferAddress(void)
 	int fb_fd = open(FB_DEVICE_NAME, O_RDWR, 0);
 
 	if (fb_fd == -1) {
-		LOGE("EGL: GetFramebufferAddress: cannot open fb");
+		ALOGE("EGL: GetFramebufferAddress: cannot open fb");
 		return 0;
 	}
 
 	fb_fix_screeninfo finfo;
 	if (ioctl(fb_fd, FBIOGET_FSCREENINFO, &finfo) < 0) {
-		LOGE("EGL: Failed to get framebuffer address");
+		ALOGE("EGL: Failed to get framebuffer address");
 		close(fb_fd);
 		return 0;
 	}
@@ -320,7 +324,7 @@ static unsigned long fglGetBufferPhysicalAddress(android_native_buffer_t *buffer
 		return region.offset + hnd->offset;
 
 	/* otherwise we can't do anything, but fail */
-	LOGE("EGL: fglGetBufferPhysicalAddress failed");
+	ALOGE("EGL: fglGetBufferPhysicalAddress failed");
 	return 0;
 }
 
@@ -342,20 +346,20 @@ public:
 
 		if (!b || b->common.magic != ANDROID_NATIVE_BUFFER_MAGIC
 		    || b->common.version != sizeof(android_native_buffer_t)) {
-			LOGE("%s: Invalid EGLClientBuffer", __func__);
+			ALOGE("%s: Invalid EGLClientBuffer", __func__);
 			return;
 		}
 
 		const private_handle_t *hnd =
 				(const private_handle_t *)b->handle;
 		if (!hnd) {
-			LOGE("%s: Invalid buffer handle", __func__);
+			ALOGE("%s: Invalid buffer handle", __func__);
 			return;
 		}
 
 		const hw_module_t *pModule;
 		if (hw_get_module(GRALLOC_HARDWARE_MODULE_ID, &pModule)) {
-			LOGE("%s: Could not get gralloc module", __func__);
+			ALOGE("%s: Could not get gralloc module", __func__);
 			return;
 		}
 
@@ -378,7 +382,7 @@ public:
 		region.len	= size;
 
 		if (ioctl(handle->fd, PMEM_CACHE_FLUSH, &region) != 0)
-			LOGW("Could not flush PMEM surface %d", handle->fd);
+			ALOGW("Could not flush PMEM surface %d", handle->fd);
 	}
 
 	virtual int lock(int usage = 0)
@@ -438,7 +442,7 @@ class FGLWindowSurface : public FGLRenderSurface {
 
 		void dump(const char *what)
 		{
-			LOGD("%s { %5d, %5d, w=%5d, h=%5d }",
+			ALOGD("%s { %5d, %5d, w=%5d, h=%5d }",
 				what, left, top, right-left, bottom-top);
 		}
 	};
@@ -725,7 +729,7 @@ public:
 				| GRALLOC_USAGE_SW_WRITE_RARELY
 				| GRALLOC_USAGE_HW_RENDER;
 		if (lock(buffer, usage, &bits)) {
-			LOGE("%s failed to lock buffer %p (%ux%u)",
+			ALOGE("%s failed to lock buffer %p (%ux%u)",
 					__func__, buffer, buffer->stride,
 					buffer->height);
 
@@ -808,7 +812,7 @@ public:
 
 		// pin the buffer down
 		if (lock(buffer, usage, &bits)) {
-			LOGE("%s failed to lock buffer %p (%ux%u)",
+			ALOGE("%s failed to lock buffer %p (%ux%u)",
 					__func__, buffer, buffer->stride,
 					buffer->height);
 

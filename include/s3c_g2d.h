@@ -1,99 +1,159 @@
-/*
- * Copyright  2007 Samsung Electronics Co, Ltd. All Rights Reserved. 
+/* g2d/s3c_g2d.h
  *
- * This software is the confidential and proprietary information
- * of Samsung Electronics  ("Confidential Information").   
- * you shall not disclose such Confidential Information and shall use
- * it only in accordance with the terms of the license agreement
- * you entered into with Samsung Electronics 
+ * Copyright (c) 2010 Tomasz Figa <tomasz.figa@gmail.com>
  *
- * This file implements s3c-g2d driver.
+ * Samsung S3C G2D driver
  *
- * @name 2D DRIVER MODULE Module (s3c_g2d_test.h)
- * @date 2008-12-05
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
 #ifndef _S3C_G2D_H_
 #define _S3C_G2D_H_
 
-typedef unsigned char  u8;
-typedef unsigned short u16;
-typedef unsigned long  u32;
+#include <linux/ioctl.h>
 
-#define TRUE    1
-#define FALSE   0
+#define G2D_IOCTL_MAGIC			'G'
 
-
-#define S3C_G2D_DEV_NAME		"/dev/s3c-g2d"
-
-#define G2D_IOCTL_MAGIC	'G'
-
-#define S3C_G2D_ROTATOR_0			_IO(G2D_IOCTL_MAGIC,0)
-#define S3C_G2D_ROTATOR_90			_IO(G2D_IOCTL_MAGIC,1)
-#define S3C_G2D_ROTATOR_180			_IO(G2D_IOCTL_MAGIC,2)
-#define S3C_G2D_ROTATOR_270			_IO(G2D_IOCTL_MAGIC,3)
+#define S3C_G2D_ROTATOR_0		_IO(G2D_IOCTL_MAGIC,0)
+#define S3C_G2D_ROTATOR_90		_IO(G2D_IOCTL_MAGIC,1)
+#define S3C_G2D_ROTATOR_180		_IO(G2D_IOCTL_MAGIC,2)
+#define S3C_G2D_ROTATOR_270		_IO(G2D_IOCTL_MAGIC,3)
 #define S3C_G2D_ROTATOR_X_FLIP		_IO(G2D_IOCTL_MAGIC,4)
 #define S3C_G2D_ROTATOR_Y_FLIP		_IO(G2D_IOCTL_MAGIC,5)
 
-#define G2D_ALPHA_ON	1
-#define G2D_ALPHA_OFF	0
-#define G2D_ALPHA_SRC_BITMAP 1
-#define G2D_ALPHA_SRC_BITMAP 1
-#define G2D_COLOR_KEY_ON	1
-#define G2D_COLOR_KEY_OFF	0
-
-typedef enum
-{
-	G2D_BLACK = 0, G2D_RED = 1, G2D_GREEN = 2, G2D_BLUE = 3, G2D_WHITE = 4, 
-	G2D_YELLOW = 5, G2D_CYAN = 6, G2D_MAGENTA = 7
-} G2D_COLOR;
+/*
+ * S3C_G2D_BITBLT
+ * Start hardware bitblt operation.
+ * Argument:	a pointer to struct s3c_g2d_req with operation parameters
+ * Returns:	  0 on success,
+ *		< 0, on error
+ */
+#define S3C_G2D_BITBLT			_IOW(G2D_IOCTL_MAGIC, 6, struct s3c_g2d_req)
 
 /*
+ * S3C_G2D_FILLRECT
+ * Start hardware fillrect operation.
+ * Argument:	a pointer to struct s3c_g2d_fillrect with operation parameters
+ * Returns:	  0 on success,
+ *		< 0, on error
+ */
+#define S3C_G2D_FILLRECT		_IOW(G2D_IOCTL_MAGIC, 7, struct s3c_g2d_fillrect)
+
+
+/*
+ * S3C_G2D_SET_ALPHA_VAL
+ * Set requested plane alpha value.
+ * Argument:	a value from <0, ALPHA_VALUE_MAX> range
+ */
+#define S3C_G2D_SET_ALPHA_VAL		_IO(G2D_IOCTL_MAGIC, 8)
+#define ALPHA_VALUE_MAX			255
+
+/*
+ * S3C_G2D_SET_RASTER_OP
+ * Set requested raster operation. 
+ * Argument:	an 8-bit value defining the operation
+ */
+#define S3C_G2D_SET_RASTER_OP		_IO(G2D_IOCTL_MAGIC, 9)
+#define G2D_ROP_SRC_ONLY		(0xCC)
+#define G2D_ROP_3RD_OPRND_ONLY		(0xF0)
+#define G2D_ROP_DST_ONLY		(0xAA)
+#define G2D_ROP_SRC_OR_DST		(0xEE)
+#define G2D_ROP_SRC_OR_3RD_OPRND	(0xFC)
+#define G2D_ROP_SRC_AND_DST		(0x88) 
+#define G2D_ROP_SRC_AND_3RD_OPRND	(0xC0)
+#define G2D_ROP_SRC_XOR_3RD_OPRND	(0x3C)
+#define G2D_ROP_DST_OR_3RD_OPRND	(0xFA)
+
+/*
+ * S3C_G2D_SET_BLENDING
+ * Set requested alpha blending mode.
+ * Argument:	one of G2D_*_ALPHA values
+ */
+#define S3C_G2D_SET_BLENDING		_IO(G2D_IOCTL_MAGIC, 10)
 typedef enum
 {
-	G2D_PAL1,  G2D_PAL2,  G2D_PAL4,  G2D_PAL8,
-	G2D_RGB8,  G2D_ARGB8, G2D_RGB16, G2D_ARGB16,
-	G2D_RGB18, G2D_RGB24, G2D_RGB30, G2D_ARGB24,G2D_RGBA16,G2D_RGBX24, G2D_RGBA24,
-	G2D_YC420, G2D_YC422, // Non-interleave
-	G2D_CRYCBY, G2D_CBYCRY, G2D_YCRYCB, G2D_YCBYCR, G2D_YUV444 // Interleave
-} G2D_COLOR_SPACE;
-*/
+	G2D_NO_ALPHA_BLEND_MODE,
+	G2D_EN_ALPHA_BLEND_MODE,
+	G2D_EN_ALPHA_BLEND_CONST_ALPHA,
+	G2D_EN_ALPHA_BLEND_PERPIXEL_ALPHA,
+	G2D_EN_FADING_MODE
+} G2D_ALPHA_BLENDING_MODE;
+
+/* Maximum values for the hardware */
+#define G2D_MAX_WIDTH				(8000)
+#define G2D_MAX_HEIGHT				(8000)
+
+#define S3C_G2D_SET_TRANSFORM		_IO(G2D_IOCTL_MAGIC, 12)
+enum
+{
+	G2D_ROT_0	= 1 << 0,
+	G2D_ROT_90	= 1 << 1,
+	G2D_ROT_180	= 1 << 2,
+	G2D_ROT_270	= 1 << 3,
+	G2D_ROT_FLIP_X	= 1 << 4,
+	G2D_ROT_FLIP_Y	= 1 << 5
+};
+
+/* Image data */
+struct s3c_g2d_image
+{
+	uint32_t	base;	// image base address (NULL to use fd)
+	int	        fd;	// image file descriptor (for PMEM)
+	uint32_t	offs;	// buffer offset
+	uint32_t	w;	// image full width
+	uint32_t	h;	// image full height
+	uint32_t	l;	// x coordinate of left edge
+	uint32_t	t;	// y coordinate of top edge
+	uint32_t	r;	// x coordinage of right edge
+	uint32_t	b;	// y coordinate of bottom edge
+	uint32_t	fmt;	// color format
+};
 
 typedef enum
 {
-	G2D_RGB16=0, G2D_RGBA16, G2D_ARGB16, G2D_RGBA32, G2D_ARGB32, G2D_XRGB32, G2D_RGBX32
-} G2D_COLOR_SPACE;
+	G2D_RGBA_8888 = 1,
+	G2D_RGBX_8888 = 2,
+	G2D_ARGB_8888 = 3,
+	G2D_XRGB_8888 = 4,
+	G2D_BGRA_8888 = 5,
+	G2D_BGRX_8888 = 6,
+	G2D_ABGR_8888 = 7,
+	G2D_XBGR_8888 = 8,
+	G2D_RGB_888   = 9,
+	G2D_BGR_888   = 10,
+	G2D_RGB_565   = 11,
+	G2D_BGR_565   = 12,
+	G2D_RGBA_5551 = 13,
+	G2D_ARGB_5551 = 14,
+	G2D_RGBA_4444 = 15,
+	G2D_ARGB_4444 = 16
+} G2D_COLOR_FMT;
 
-typedef struct
+/* Bitblt request */
+struct s3c_g2d_req
 {
-	u32	src_base_addr;			//Base address of the source image
-	u32	src_full_width;			//source image full width
-	u32	src_full_height;			//source image full height
-	u32	src_start_x;				//coordinate start x of source image
-	u32	src_start_y;				//coordinate start y of source image
-	u32	src_work_width;			//source image width for work
-	u32 src_work_height;		//source image height for work
+	struct s3c_g2d_image src; // source image
+	struct s3c_g2d_image dst; // destination image
+};
 
-	u32	dst_base_addr;			//Base address of the destination image	
-	u32	dst_full_width;			//destination screen full width
-	u32	dst_full_height;			//destination screen full width
-	u32	dst_start_x;				//coordinate start x of destination screen
-	u32	dst_start_y;				//coordinate start y of destination screen
-	u32	dst_work_width;			//destination screen width for work
-	u32 dst_work_height;		//destination screen height for work
+/* Fillrect request */
+struct s3c_g2d_fillrect
+{
+	struct s3c_g2d_image dst;
+	uint32_t color;
+	uint8_t alpha;
+};
 
-	// Coordinate (X, Y) of clipping window
-	u32  cw_x1, cw_y1;
-	u32  cw_x2, cw_y2;
-
-	u32  color_val[8];
-	G2D_COLOR_SPACE bpp_dst;
-
-	u32	alpha_mode;			//true : enable, false : disable
-	u32	alpha_val;
-	u32	color_key_mode;		//treu : enable, false : disable
-	u32	color_key_val;			//transparent color value
-	G2D_COLOR_SPACE bpp_src;
-
-}s3c_g2d_params;
-
-#endif /*_S3C_G2D_H_*/
+#endif

@@ -1,4 +1,4 @@
-# Copyright (C) 2009 The Android Open Source Project
+# Copyright (C) 2011 The Android Open Source Project
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,26 +12,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+# This file includes all definitions that apply only to apollo devices
 #
-# This file is the build configuration for a full Android
-# build for crespo hardware. This cleanly combines a set of
-# device-specific aspects (drivers) with a device-agnostic
-# product configuration (apps).
+# Anything that is generic to all apollo products should go in the tuna directory
 #
+# Everything in this directory will become public
 
 # Inherit from those products. Most specific first.
-#$(call inherit-product, $(SRC_TARGET_DIR)/product/full_base.mk)
-# This is where we'd set a backup provider if we had one
-#$(call inherit-product, device/sample/products/backup_overlay.mk)
-$(call inherit-product, device/samsung/apollo/BoardConfig.mk)
+$(call inherit-product, $(SRC_TARGET_DIR)/product/languages_full.mk)
+
+DEVICE_PACKAGE_OVERLAYS := device/samsung/apollo/overlay
+PRODUCT_PACKAGE_OVERLAYS := device/samsung/apollo/overlay
+
 $(call inherit-product, device/samsung/apollo/device.mk)
+$(call inherit-product-if-exists, vendor/samsung/apollo/device-vendor.mk)
 $(call inherit-product, $(SRC_TARGET_DIR)/product/full.mk)
-
-# Discard inherited values and use our own instead.
-PRODUCT_NAME := full_apollo
-PRODUCT_DEVICE := apollo
-PRODUCT_MODEL := GT-I5800
-PRODUCT_BRAND := samsung
-PRODUCT_MANUFACTURER := Samsung
-
 

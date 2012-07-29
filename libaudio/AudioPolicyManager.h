@@ -23,7 +23,7 @@
 #include <hardware_legacy/AudioPolicyManagerBase.h>
 
 
-namespace android {
+namespace android_audio_legacy {
 
 class AudioPolicyManager: public AudioPolicyManagerBase
 {
@@ -33,15 +33,6 @@ public:
                 : AudioPolicyManagerBase(clientInterface) {}
 
         virtual ~AudioPolicyManager() {}
-
-        virtual status_t startInput(audio_io_handle_t input);
-protected:
-        // true is current platform implements a back microphone
-        virtual bool hasBackMicrophone() const { return false; }
-#ifdef WITH_A2DP
-        // true is current platform supports duplication of notifications and ringtones over A2DP output
-        virtual bool a2dpUsedForSonification() const { return true; }
-#endif
 
 };
 };

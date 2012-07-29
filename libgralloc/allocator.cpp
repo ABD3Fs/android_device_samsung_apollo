@@ -113,8 +113,8 @@ ssize_t SimpleBestFitAllocator::alloc(size_t size, uint32_t flags)
 				mList.insertBefore(free_chunk, split);
 			}
 
-			LOGE_IF(((free_chunk->start*kMemoryAlign)&(pagesize-1)),
-				"page is not aligned!!!");
+			//LOGE_IF(((free_chunk->start*kMemoryAlign)&(pagesize-1)),
+		//		"page is not aligned!!!");
 
 			const ssize_t tail_free = free_size - (size+extra);
 			if (tail_free > 0) {

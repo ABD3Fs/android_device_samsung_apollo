@@ -42,7 +42,7 @@
 
 #ifdef COPYBIT_DEBUG
 #define DBOUT(arg,...) \
-LOGI(arg,__VA_ARGS__)
+ALOGI(arg,__VA_ARGS__)
 #endif
 
 #define DEBUG_G2D_ERRORS 0
@@ -132,10 +132,10 @@ static int get_format(int format) {
 		case COPYBIT_FORMAT_RGBA_8888:     return G2D_RGBA_8888;
 		case COPYBIT_FORMAT_BGRA_8888:     return G2D_ARGB_8888;
 		//case COPYBIT_FORMAT_YCbCr_422_SP: return -1;
-		case COPYBIT_FORMAT_YCbCr_420_SP: return G2D_RGB_565;
-		case COPYBIT_FORMAT_YCrCb_420_SP: return G2D_RGB_565;
+		//case COPYBIT_FORMAT_YCbCr_420_SP: return G2D_RGB_565;
+		//case COPYBIT_FORMAT_YCrCb_420_SP: return G2D_RGB_565;
 		default :
-			LOGE("Copybit HAL unsupport format ! ,format is 0x%x",format);
+			ALOGE("Copybit HAL unsupport format ! ,format is 0x%x",format);
 			return -1;
 	}
 
@@ -210,7 +210,7 @@ static int set_image(struct copybit_context_t *dev, s3c_g2d_params *req, const s
         if (ioctl(hnd->fd, PMEM_GET_PHYS, &region) < 0)
         {
             status = -errno;
-            LOGE("set_image: PMEM_GET_PHYS failed!(%s)\n", strerror(status));
+            ALOGE("set_image: PMEM_GET_PHYS failed!(%s)\n", strerror(status));
             goto error;
         }
 	
@@ -220,7 +220,7 @@ static int set_image(struct copybit_context_t *dev, s3c_g2d_params *req, const s
             req->dst_base_addr = region.offset + hnd->offset;
         
     } else {
-        LOGE("set_image: unsupport flags 0x%08x\n", hnd->flags);
+        ALOGE("set_image: unsupport flags 0x%08x\n", hnd->flags);
         status = -EINVAL;
     }
 
@@ -321,7 +321,7 @@ switch(dev->transform)
     LOGE("alpha_mode %d alpha_val %d\n", req->alpha_mode, req->alpha_val);
     LOGE("color_key_mode %d color_key_val %d\n", req->color_key_mode, req->color_key_val);*/
     err = ioctl(dev->mFD_G2D, cmd, req);
-    LOGE_IF(err<0, "copyBits failed (%s)", strerror(errno));
+    ALOGE_IF(err<0, "copyBits failed (%s)", strerror(errno));
     if (err == 0) {
         return 0;
     } else {
@@ -345,7 +345,7 @@ int status=0;
     ctx->rotation = value;
     if(!((value==0)||(value==90)||(value==270)))
     {
-     LOGE("In valid rotation degree\n");   
+     ALOGE("In valid rotation degree\n");   
      status=-EINVAL;        
     }
         break;
@@ -365,7 +365,7 @@ int status=0;
         break;
 
     default:
-       LOGE("name of the set parameter not implemented\n");
+       ALOGE("name of the set parameter not implemented\n");
         return -EINVAL;
     }
     return status;
@@ -524,7 +524,7 @@ ctx->transform = 0;
     if (ctx->mFD_G2D < 0) 
 {
         status = errno;
-        LOGE("Error opening frame buffer errno=%d (%s)", status, strerror(status));
+        ALOGE("Error opening frame buffer errno=%d (%s)", status, strerror(status));
         status = -status;
    }
 
@@ -553,7 +553,7 @@ static int open_copybit(const struct hw_module_t* module, const char* name,
 {
     int status = -EINVAL;
     copybit_context_t *ctx;
-    LOGE("open_copybit: +++\n");
+    ALOGE("open_copybit: +++\n");
     ctx = (copybit_context_t *)malloc(sizeof(copybit_context_t));
     memset(ctx, 0, sizeof(*ctx));
 
@@ -571,7 +571,7 @@ static int open_copybit(const struct hw_module_t* module, const char* name,
     ctx->mFD_G2D = open("/dev/s3c-g2d", O_RDWR);
     if (ctx->mFD_G2D <0) {
         status = errno;
-        LOGE("Error opening G2D errno=%d (%s)",
+        ALOGE("Error opening G2D errno=%d (%s)",
              status, strerror(status));
         status = -status;
         return status;
@@ -581,7 +581,7 @@ static int open_copybit(const struct hw_module_t* module, const char* name,
     
     if (ctx->mFD < 0) {
         status = errno;
-        LOGE("Error opening frame buffer errno=%d (%s)",
+        ALOGE("Error opening frame buffer errno=%d (%s)",
              status, strerror(status));
         status = -status;
     } else {
@@ -594,7 +594,7 @@ static int open_copybit(const struct hw_module_t* module, const char* name,
                 /* Success */
                 status = 0;
             } else {
-                LOGE("Error not msm frame buffer");
+                ALOGE("Error not msm frame buffer");
                 status = -EINVAL;
             }
 #endif
@@ -603,7 +603,7 @@ static int open_copybit(const struct hw_module_t* module, const char* name,
             memcpy(&(ctx->vinfo), &vinfo, sizeof(struct fb_var_screeninfo));
 
         } else {
-            LOGE("Error executing ioctl for screen info");
+            ALOGE("Error executing ioctl for screen info");
             status = -errno;
         }
     }
@@ -613,6 +613,6 @@ static int open_copybit(const struct hw_module_t* module, const char* name,
     } else {
         close_copybit(&ctx->device.common);
     }
-    LOGE("open_copybit: ---\n");
+    ALOGE("open_copybit: ---\n");
     return status;
 }
