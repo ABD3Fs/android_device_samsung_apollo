@@ -87,8 +87,6 @@ PRODUCT_COPY_FILES += \
 	device/samsung/apollo/kernel:kernel \
   device/samsung/apollo/klogtail:system/bin/klogtail
 
-#    phone.ril.classname = com.android.internal.telephony.SamsungRIL \
-
 PRODUCT_COPY_FILES += \
 	device/samsung/apollo/libaudio/audio_policy.conf:system/etc/audio_policy.conf
 
@@ -132,10 +130,6 @@ PRODUCT_COPY_FILES += \
 	packages/wallpapers/LivePicker/android.software.live_wallpaper.xml:system/etc/permissions/android.software.live_wallpaper.xml
 
 
-# device/samsung/apollo/prebuilt/ril/rild:system/bin/rild \
-# device/samsung/apollo/prebuilt/ril/libril.so:system/lib/libril.so \
-# device/samsung/apollo/prebuilt/ril/libsec-ril.so:system/lib/libsec-ril.so \
-
 PRODUCT_COPY_FILES += \
         vendor/cm/prebuilt/common/etc/apns-conf.xml:system/etc/apns-conf.xml \
         device/samsung/apollo/prebuilt/etc/media_profiles.xml:system/etc/media_profiles.xml \
@@ -162,6 +156,9 @@ PRODUCT_COPY_FILES += \
         device/samsung/apollo/prebuilt/wifi/wifi.conf:system/etc/wifi/wifi.conf \
         device/samsung/apollo/prebuilt/wifi/wpa_supplicant.conf:system/etc/wifi/wpa_supplicant.conf \
       	device/samsung/apollo/prebuilt/camera/libcamera.so:obj/lib/libcamera.so \
+      device/samsung/apollo/prebuilt/ril/rild:system/bin/rild \
+      device/samsung/apollo/prebuilt/ril/libril.so:system/lib/libril.so \
+      device/samsung/apollo/prebuilt/ril/libsec-ril.so:system/lib/libsec-ril.so \
     	device/samsung/apollo/prebuilt/camera/libsecjpeg.so:obj/lib/libsecjpeg.so \
     	device/samsung/apollo/prebuilt/camera/libcamera.so:system/lib/libcamera.so \
     	device/samsung/apollo/prebuilt/gps/libsecgps.so:system/lib/libsecgps.so \
